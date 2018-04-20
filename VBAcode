@@ -1,0 +1,315 @@
+Option Explicit
+Option Base 1
+
+Public oServer As OPCServer
+Public TagGroups As OPCGroups
+Public TagGroup As OPCGroup
+Public Tags As OPCItems
+
+Public TagServerHdl1() As Long, TagErrors1() As Long
+Public TagServerHdl2() As Long, TagErrors2() As Long
+Public TagServerHdl3() As Long, TagErrors3() As Long
+Public TagServerHdl4() As Long, TagErrors4() As Long
+Public TagServerHdl5() As Long, TagErrors5() As Long
+Public TagServerHdl6() As Long, TagErrors6() As Long
+Public TagServerHdl7() As Long, TagErrors7() As Long
+Public TagServerHdl8() As Long, TagErrors8() As Long
+Public TagServerHdl9() As Long, TagErrors9() As Long
+
+
+Public NameID() As Variant
+Public WT() As Variant
+Public Actual() As Variant
+Public Day() As Variant
+Public Hour() As Variant
+Public Min() As Variant
+Public RPM() As Variant
+
+Public ProductDes() As Variant
+Public StartDT() As Variant
+
+Dim Errors() As Long, NoofTags As Long
+
+Public Sub Connect_Click()
+
+    OPCConnect
+'    Call AddTags
+'    Call ReadTags
+'    Call DisconnectOPC
+'    Call Push2Sheet
+'    Call CreateStockReport
+'    Call SaveSave
+End Sub
+
+Public Sub OPCConnect()
+    On Error GoTo Connect_Error
+    
+    Dim ProgID As String, Node
+    
+    'Try connecting to the server
+    Set oServer = New OPCServer
+    oServer.Connect "CoDeSys.OPC.DA"
+    'Connection successful, create browsers and Tag groups
+    
+    Set TagGroups = oServer.OPCGroups
+    TagGroups.DefaultGroupIsActive = True
+    
+    Set TagGroup = TagGroups.Add("Tags")
+    TagGroup.UpdateRate = 1000
+    TagGroup.IsSubscribed = True
+    
+    Set Tags = TagGroup.OPCItems
+    Tags.DefaultIsActive = True
+
+    AddTags
+    ReadTags
+    DisconnectOPC
+    Push2Sheet
+    CreateStockReport
+    SaveSave
+
+    Exit Sub
+
+Connect_Error:
+    [Status] = Err.Description
+    
+End Sub
+
+Private Sub DisconnectOPC()
+
+    Set Tags = Nothing
+    Set TagGroup = Nothing
+    Set TagGroups = Nothing
+    Set oServer = Nothing
+
+End Sub
+
+Private Sub AddTags()
+    
+    Dim NoofRequests%, tag1(40) As String, TagNO() As Long, k%, j%, c%, d%, e%, f%, g%, h%, i%, a%, b%
+    Dim tag2(40) As String, tag3(40) As String, tag4(40) As String, Tag5(40) As String, Tag6(40) As String, Tag7(40) As String, Tag8(4) As String, Tag9(5) As String
+    Dim Tagno1(40) As Long
+    Dim Tagno2(40) As Long
+    Dim Tagno3(40) As Long
+    Dim Tagno4(40) As Long
+    Dim Tagno5(40) As Long
+    Dim Tagno6(40) As Long
+    Dim Tagno7(40) As Long
+    Dim Tagno8(4) As Long
+    Dim Tagno9(5) As Long
+    
+    c = [b1].Column
+    d = [c1].Column
+    e = [d1].Column
+    f = [e1].Column
+    g = [f1].Column
+    h = [g1].Column
+    i = [h1].Column
+    
+    a = [j1].Column
+    b = [l1].Column
+
+    
+    For j = 2 To 41
+        tag1(j - 1) = Sheet3.Cells(j, c)
+        tag2(j - 1) = Sheet3.Cells(j, d)
+        tag3(j - 1) = Sheet3.Cells(j, e)
+        tag4(j - 1) = Sheet3.Cells(j, f)
+        Tag5(j - 1) = Sheet3.Cells(j, g)
+        Tag6(j - 1) = Sheet3.Cells(j, h)
+        Tag7(j - 1) = Sheet3.Cells(j, i)
+        Tagno1(j - 1) = j - 1
+        Tagno2(j - 1) = j - 1
+        Tagno3(j - 1) = j - 1
+        Tagno4(j - 1) = j - 1
+        Tagno5(j - 1) = j - 1
+        Tagno6(j - 1) = j - 1
+        Tagno7(j - 1) = j - 1
+    Next
+    
+    For j = 2 To 5
+    Tag8(j - 1) = Sheet3.Cells(j, a)
+    Tagno8(j - 1) = j - 1
+    Next
+    
+    For j = 2 To 6
+    Tag9(j - 1) = Sheet3.Cells(j, b)
+    Tagno9(j - 1) = j - 1
+    Next
+        
+    Tags.AddItems 40, tag1(), Tagno1(), TagServerHdl1(), TagErrors1()
+    Tags.AddItems 40, tag2(), Tagno2(), TagServerHdl2(), TagErrors2()
+    Tags.AddItems 40, tag3(), Tagno3(), TagServerHdl3(), TagErrors3()
+    Tags.AddItems 40, tag4(), Tagno4(), TagServerHdl4(), TagErrors4()
+    Tags.AddItems 40, Tag5(), Tagno5(), TagServerHdl5(), TagErrors5()
+    Tags.AddItems 40, Tag6(), Tagno6(), TagServerHdl6(), TagErrors6()
+    Tags.AddItems 40, Tag7(), Tagno7(), TagServerHdl7(), TagErrors7()
+    Tags.AddItems 4, Tag8(), Tagno8(), TagServerHdl8(), TagErrors8()
+    Tags.AddItems 5, Tag9(), Tagno9(), TagServerHdl9(), TagErrors9()
+    
+End Sub
+
+Private Sub ReadTags()
+
+    Call TagGroup.SyncRead(2, 40, TagServerHdl1, NameID, TagErrors1)
+    Call TagGroup.SyncRead(2, 40, TagServerHdl2, WT, TagErrors2)
+    Call TagGroup.SyncRead(2, 40, TagServerHdl3, Actual, TagErrors3)
+    Call TagGroup.SyncRead(2, 40, TagServerHdl4, Day, TagErrors4)
+    Call TagGroup.SyncRead(2, 40, TagServerHdl5, Hour, TagErrors5)
+    Call TagGroup.SyncRead(2, 40, TagServerHdl6, Min, TagErrors6)
+    Call TagGroup.SyncRead(2, 40, TagServerHdl7, RPM, TagErrors7)
+    Call TagGroup.SyncRead(2, 4, TagServerHdl8, ProductDes, TagErrors8)
+    Call TagGroup.SyncRead(2, 5, TagServerHdl9, StartDT, TagErrors9)
+    
+End Sub
+
+Private Sub Push2Sheet()
+
+    Dim i As Integer
+    Dim Terminate As String
+    'Terminate = Format(Now, "DD") & "/" & Format(Now, "MM") & "/" & Format(Now, "YY") & " " & Format(Time, "HH:mm") & ":" & Format(Now, "minute")
+     Terminate = Format(Now, "DD") & "/" & Format(Now, "MM") & "/" & Format(Now, "YY") & " " & Format(Time, "HH:mm")
+    Sheet1.Range("B9:Q38", "B40:Q39").ClearContents
+   
+   
+    For i = 1 To 30
+        If (NameID(i) <> "") Then
+            Sheet1.Cells(i + 8, 2) = NameID(i)
+            Sheet1.Cells(i + 8, 6) = WT(i)
+            Sheet1.Cells(i + 8, 11) = Actual(i)
+            Sheet1.Cells(i + 8, 14) = Day(i)
+            Sheet1.Cells(i + 8, 15) = CStr(Hour(i)) + ":" + CStr(Min(i))
+            Sheet1.Cells(i + 8, 16) = RPM(i)
+        End If
+    Next
+
+    For i = 31 To 40
+        If (NameID(i) <> "") Then
+            Sheet1.Cells(i + 9, 2) = NameID(i)
+            Sheet1.Cells(i + 9, 6) = WT(i)
+            Sheet1.Cells(i + 9, 11) = Actual(i)
+            Sheet1.Cells(i + 9, 14) = Day(i)
+            Sheet1.Cells(i + 9, 15) = CStr(Hour(i)) + ":" + CStr(Min(i))
+            Sheet1.Cells(i + 9, 16) = RPM(i)
+        End If
+    Next
+    
+    Sheet1.Cells(4, 13) = Terminate
+    Sheet1.Cells(4, 3) = ProductDes(2)
+
+    Sheet1.Cells(3, 3) = ProductDes(1)
+    Sheet2.Cells(4, 3) = ProductDes(2)
+    
+    Sheet1.Cells(3, 13) = CStr(StartDT(1)) + "/" + CStr(StartDT(2)) + "/" + CStr(StartDT(3)) + " " + CStr(StartDT(4)) + ":" + CStr(StartDT(5))
+    Sheet1.Cells(5, 13) = CStr(ProductDes(3)) + " Hours " + CStr(ProductDes(4)) + " Minutes"
+    Sheet2.Cells(3, 13) = CStr(StartDT(1)) + "/" + CStr(StartDT(2)) + "/" + CStr(StartDT(3)) + " " + CStr(StartDT(4)) + ":" + CStr(StartDT(5))
+    Sheet2.Cells(5, 13) = CStr(ProductDes(3)) + " Hours " + CStr(ProductDes(4)) + " Minutes"
+    Sheet2.Cells(4, 13) = Terminate
+    
+    
+End Sub
+
+
+Public Sub CreateStockReport()
+
+    Dim Data(40, 2) As Variant
+    Dim i, j As Integer
+    Dim NoOfRaw As Integer
+    Dim BufRawName As String
+    Dim RawName As String
+    Dim RawActual As Integer
+        
+    NoOfRaw = 0
+    
+    For i = 1 To 41
+    BufRawName = Sheet1.Cells(8 + i, 2)
+        If ((BufRawName <> "") And (BufRawName <> "NO-FILL")) Then
+            RawName = Right(Sheet1.Cells(8 + i, 2), Len(Sheet1.Cells(8 + i, 2)) - 2)
+            RawActual = Sheet1.Cells(8 + i, 11)
+            For j = 0 To NoOfRaw
+                If (j = NoOfRaw) Then
+                    Data(NoOfRaw + 1, 1) = RawName
+                    NoOfRaw = NoOfRaw + 1
+                End If
+                If (Data(j + 1, 1) = RawName) Then
+                    Data(j + 1, 2) = Data(j + 1, 2) + RawActual
+                    j = NoOfRaw
+                End If
+            Next j
+        End If
+    Next i
+    
+    Sheet2.Range("B8:T47").ClearContents
+    For i = 1 To NoOfRaw
+        Sheet2.Cells(i + 7, 3) = Data(i, 1)
+        Sheet2.Cells(i + 7, 19) = Data(i, 2)
+    Next i
+    
+    
+End Sub
+
+Sub SaveSave()
+ 
+ Dim Filename1 As String
+ Dim DTM As String
+ Dim GetNow As String
+ Dim checkD As String
+ Dim checkDTM As String
+ Dim checkD1 As String
+ Dim a%, j%
+
+ 
+ DTM = Format(Now, "MM") & Format(Now, "YY")
+GetNow = Format(Now, "DD-MM-YY_HH.MM")
+
+ Filename1 = ProductDes(1) & "_" & GetNow & ".xlsx"
+ 'Filename1 = ProductDes(1) & create arrayTag of terminated time dd-mm-yy & &time 00:00 & & ".xlsx"
+ 
+ 
+
+'************Check Directory************* '
+checkD = Dir("D:\Report\", vbDirectory)
+checkDTM = Dir("D:\Report\" & DTM, vbDirectory)
+checkD1 = Dir("D:\Report\" & DTM & "\Mixer1", vbDirectory)
+
+'********Create directory****************'
+If checkD = "" Then
+ MkDir ("D:\Report\")
+ 'MkDir ("C:\Users\asus\Desktop\Report\" & DTM)
+End If
+
+If checkDTM = "" Then
+ ChDir ("D:\Report\")
+ MkDir ("D:\Report\" & DTM)
+
+'MkDir ("C:\Users\asus\Desktop\Report\" & DTM & "\")
+
+End If
+
+If checkD1 = "" Then
+  
+    ChDir ("D:\Report\" & DTM & "\")
+    MkDir ("D:\Report\" & DTM & "\Mixer1")
+
+End If
+
+Sheets(Array("StepReport", "StockReport")).Select
+Sheets(Array("StepReport", "StockReport")).Copy
+
+    ChDir ("D:\Report\" & DTM & "\Mixer1\")
+   ActiveWorkbook.SaveCopyAs Filename:="D:\Report\" & DTM & "\Mixer1\" & Filename1
+    'MsgBox "Already save file " & Filename1
+
+  
+    ActiveWorkbook.Close savechanges:=False
+    ChDir ("D:\")
+    
+   
+    ThisWorkbook.Save
+    Application.Quit
+
+End Sub
+
+
+
+
